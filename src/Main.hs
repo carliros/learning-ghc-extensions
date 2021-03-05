@@ -1,7 +1,7 @@
 {-# LANGUAGE ViewPatterns #-}
 module Main where
 
-{- ######### View Patterns extension -}
+{-- ######### View Patterns extension --}
 -- example taken from https://jsdw.me/posts/haskell-language-extensions/#viewpatterns
 -- The general idea is that you can execute the case pattern match in any computation. 
 
@@ -14,11 +14,28 @@ getOrDefault name = case (lookup name someList) of
   Nothing -> 5
 
 getOrDefault' :: String -> Int
-getOrDefault' (\n -> lookup n someList -> Just v) = v
+getOrDefault' ((`lookup` someList) -> Just v) = v
 getOrDefault' _ = 5
 
 -- I wonder how it would be with a bigger data type, will it execute the computation each time?
 data Contact = Person String | Institute String | Reference String
+
+createContact :: [Char] -> Contact
+createContact nm@(c:cs) = 
+  case c of
+    'i' -> Institute nm
+    'r' -> Reference nm
+    _   -> Person nm
+
+getPersonContact :: String -> Maybe String
+getPersonContact nm 
+  = case createContact nm of
+      Person name -> Just name
+      _ -> Nothing 
+
+getPersonContact' :: [Char] -> Maybe String
+getPersonContact' (createContact -> Person nm) = Just nm
+getPersonContact' _ = Nothing
 
 main :: IO ()
 main = do
